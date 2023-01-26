@@ -1,13 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 
-
 const OP_CODES =  {
     NOP: 0x00,
 };
 
 class Utility {
     static getProgramName() {
+        // FIXME:  platform dependent operation ( what Os are running on?? )
+        
         const splitted = process.argv[1].split('\\');
         const name = splitted[splitted.length - 1];
         return name;
@@ -20,6 +21,34 @@ class Utility {
         return type === 'asm';
     }
 }
+
+
+class Cursor {
+    x = 1;
+    y = 1;
+    
+    constructor(x, y) {
+          this.x = x || 1
+          this.y = y || 1;
+    }   
+    
+    
+
+}
+
+class Parser { 
+    cursor = null;
+    // TODO: we finished parsing when cursor.x * cursor.y === sourceCode.length
+    // cursor.x * cursor.y should never be over sourceCode.length
+    constructor() {
+        this.cursor = new Cursor();
+    }
+    
+      getCounter = () => {
+        return (this.cursor.x * this.cursor.y) - 1;
+    }
+}
+
 
 class Assemble {
     _line = 0;
@@ -60,7 +89,13 @@ class Assemble {
     }
 
     static assemble() {
-        for(let i = 0; i < this._source.length; i++) {}
+        // here we should get all tokens
+        // example add ax 10 ==> ["add", "ax", "10"]
+        const parser = new Parser();
+        
+        do {
+            // get tokens
+        } while(parser.cursor.getCounter() < this._source.length)
     }
 }
 
