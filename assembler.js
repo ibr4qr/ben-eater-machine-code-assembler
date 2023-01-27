@@ -30,9 +30,16 @@ class Cursor {
     constructor(x, y) {
           this.x = x || 1
           this.y = y || 1;
-    }   
-    
-    
+    }
+
+    setCursor(x, y) {
+        this.x = x;
+        this.y = y;
+
+
+        if( x <= 0 ) this.x = 1;
+        if( y <= 0 ) this.y = 1;
+    }
 
 }
 
@@ -94,8 +101,23 @@ class Assemble {
         const parser = new Parser();
         
         do {
-            // get tokens
-        } while(parser.cursor.getCounter() < this._source.length)
+            const char = this._source[parser.getCounter()];
+            const charCode = char.charCodeAt(0);
+            const w = 0x0d;
+
+            // console.log(charCode);
+
+
+            if(charCode === w) {
+                parser.cursor.setCursor(1, parser.cursor.y + 1);
+                continue;
+            }
+
+
+            parser.cursor.setCursor(parser.cursor.x + 1, parser.cursor.y);
+
+            console.log(parser.cursor);
+        } while(parser.getCounter() < this._source.length)
     }
 }
 
