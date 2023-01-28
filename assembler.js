@@ -5,6 +5,8 @@ const OP_CODES =  {
     NOP: 0x00,
 };
 
+const RT = 112;
+
 class Utility {
     static getProgramName() {
         // FIXME:  platform dependent operation ( what Os are running on?? )
@@ -45,14 +47,50 @@ class Cursor {
 
 class Parser { 
     cursor = null;
+    _source = "";
+    assembler = null;
     // TODO: we finished parsing when cursor.x * cursor.y === sourceCode.length
     // cursor.x * cursor.y should never be over sourceCode.length
-    constructor() {
+    constructor(assembler) {
         this.cursor = new Cursor();
+        this.assembler = assembler;
+        console.log(assembler);
     }
     
-      getCounter = () => {
+    getCounter = () => {
         return (this.cursor.x * this.cursor.y) - 1;
+    }
+
+    parse = () =>  {
+        const sourceCode = this.assembler._source;
+        let counter = 0;
+        let line = "";
+        const lines = [];
+        
+        while(counter < sourceCode.length)  {
+            const char = sourceCode[counter];
+
+            if(char === '\r') {
+                if(line.trim().length > 0) lines.push(line);
+                line = "";
+                counter += 2;
+                this.cursor.setCursor(this.cursor.x + 1, 1);
+                continue;
+            };
+
+            if(line.trim().length > 0 && counter + 1=== sourceCode.length) {
+                lines.push(line);
+                line = "";
+                break;
+            }
+
+            // console.log(this.cursor)
+            line += char;
+            this.cursor.setCursor(this.cursor.x, this.cursor.y + 1);
+            counter++;
+        }
+
+        return lines;
     }
 }
 
@@ -62,7 +100,6 @@ class Assemble {
     _source = "";
 
     static run() {
-        console.log(process.argv);
         const name = Utility.getProgramName();
 
         if(process.argv.length < 3) {
@@ -98,28 +135,24 @@ class Assemble {
     static assemble() {
         // here we should get all tokens
         // example add ax 10 ==> ["add", "ax", "10"]
-        const parser = new Parser();
-        
-        do {
-            const char = this._source[parser.getCounter()];
-            const charCode = char.charCodeAt(0);
-            const w = 0x0d;
-
-            // console.log(charCode);
-
-
-            if(charCode === w) {
-                parser.cursor.setCursor(1, parser.cursor.y + 1);
-                continue;
-            }
-
-
-            parser.cursor.setCursor(parser.cursor.x + 1, parser.cursor.y);
-
-            console.log(parser.cursor);
-        } while(parser.getCounter() < this._source.length)
+        const parser = new Parser(this);
+        const tokens = parser.parse();
+        console.log(tokens);
     }
 }
 
-
 Assemble.run();
+
+
+// TODO:
+// those are opCodes and the list should be returned by the assembler;
+/**
+ * generate machine code
+ */
+// var bytes = [0x00, 0xaa, 0xff];
+
+// var bu = Buffer.from(bytes);
+
+// fs.writeFile("add.bin", bu,  "binary", function(err) { 
+//     console.log(err);
+// });
