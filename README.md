@@ -17,12 +17,13 @@ How does it work?
 Registers available A, B
 
 
-main.s
+b.asm
 
 ```
-  store A 10
-  add A 20
-  print A
+LDA 10
+ADD 20
+
+OUT
   
 ```
 
@@ -30,7 +31,7 @@ main.s
 Example.
 
 ```
- essamble main.s
+ node essambler main.asm
 ```
 
 

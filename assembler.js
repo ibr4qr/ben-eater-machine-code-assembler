@@ -1,8 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 
+// ben eater computer instruction set
 const OP_CODES =  {
-    NOP: 0x00,
+    NOP: 0b0000,
+    LDA: 0b0001,
+    ADD: 0b0010,
+    SUB: 0b0011,
+    STA: 0b0100, // store registerA value into ram
+    LDI: 0b0101, // load immediate
+    OUT: 0b1110, // load only 4 bit value
+    JMP: 0b0110,
+    
+    HLT: 0b1111
 };
 
 const RT = 112;
