@@ -1,5 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+
+
+
+const isWin32 = os.platform() === 'win32';
+
 
 // ben eater computer instruction set
 const OP_CODES =  {
@@ -16,6 +22,9 @@ const OP_CODES =  {
 };
 
 const RT = 112;
+const NL = 10;
+
+
 
 class Utility {
     static getProgramName() {
@@ -53,9 +62,13 @@ class Cursor {
         if( y <= 0 ) this.y = 1;
     }
 
+    getCounter() {
+        return this.x * this.y - 1;
+    }
+
 }
 
-class Parser { 
+class Lexer { 
     cursor = null;
     _source = "";
     assembler = null;
@@ -77,31 +90,81 @@ class Parser {
         let line = "";
         const lines = [];
         
-        while(counter < sourceCode.length)  {
+
+        // ibr4qr ( we should use only the cursor )
+        while(counter < sourceCode.length && this.cursor.getCounter() < sourceCode.length)  {
+            
+
             const char = sourceCode[counter];
+            
+            if(isWin32) {
+                if(char === '\r') {
+                    if(line.trim().length > 0) lines.push(line);
+                    line = "";
+                    counter += 2;
+                    this.cursor.setCursor(this.cursor.x + 1, 1);
+                    continue;
+                };
+    
+                if(line.trim().length > 0 && counter + 1 === sourceCode.length) {
+                    lines.push(line);
+                    line = "";
+                    break;
+                }
+    
+                // console.log(this.cursor)
+                line += char;
+                this.cursor.setCursor(this.cursor.x, this.cursor.y + 1);
+                counter++;
+            } else {
 
-            if(char === '\r') {
-                if(line.trim().length > 0) lines.push(line);
-                line = "";
-                counter += 2;
-                this.cursor.setCursor(this.cursor.x + 1, 1);
-                continue;
-            };
 
-            if(line.trim().length > 0 && counter + 1=== sourceCode.length) {
-                lines.push(line);
-                line = "";
-                break;
+
+                if(sourceCode[this.cursor.getCounter()] === '\n') {
+                    console.log("hello world");
+                    this.cursor.setCursor(this.cursor.x + 1, 1);
+                    lines.push(line);
+                    line = "";
+                    continue;
+                }
+
+
+                line += sourceCode[this.cursor.getCounter()];
+                this.cursor.setCursor(this.cursor.x, this.cursor.y + 1);
             }
 
-            // console.log(this.cursor)
-            line += char;
-            this.cursor.setCursor(this.cursor.x, this.cursor.y + 1);
-            counter++;
+           
         }
 
         return lines;
     }
+}
+
+class Parser {
+    lines = [];
+    constructor(lines) {
+        this.lines = lines;
+    }
+
+
+    parse() {
+        // do cool stuff
+        Array.isArray(this.lines) && this.lines.forEach(line => {
+            const tokens = line.split(' ');
+            tokens.forEach(token => {
+                console.log(token);
+                if(!Number.isNaN(+token)) {
+                    console.log("this is a number");
+                    return;
+                }
+
+                console.log("token: ", token, " will be assembled to byteCode: ", OP_CODES[token]);
+
+            })
+
+        })
+    }
+
 }
 
 
@@ -145,9 +208,14 @@ class Assemble {
     static assemble() {
         // here we should get all tokens
         // example add ax 10 ==> ["add", "ax", "10"]
-        const parser = new Parser(this);
-        const tokens = parser.parse();
-        console.log(tokens);
+        const lexer = new Lexer(this);
+        const tokens = lexer.parse();
+        
+
+        const mockedLines = ['LDA 20', 'OUT'];
+        const parser = new Parser(mockedLines);
+        const binaryCode = parser.parse(); // we will produce directly byteCode
+
     }
 }
 
