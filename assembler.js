@@ -2,10 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-
-
 const isWin32 = os.platform() === 'win32';
 
+// TODO: get flags ==> accept --debug ( to log more info while assembling )
 
 // ben eater computer instruction set
 const OP_CODES =  {
@@ -121,13 +120,11 @@ class Lexer {
 
 
                 if(sourceCode[this.cursor.getCounter()] === '\n') {
-                    console.log("hello world");
                     this.cursor.setCursor(this.cursor.x + 1, 1);
                     lines.push(line);
                     line = "";
                     continue;
                 }
-
 
                 line += sourceCode[this.cursor.getCounter()];
                 this.cursor.setCursor(this.cursor.x, this.cursor.y + 1);
@@ -148,21 +145,24 @@ class Parser {
 
 
     parse() {
+        const byteCode = [];
         // do cool stuff
         Array.isArray(this.lines) && this.lines.forEach(line => {
             const tokens = line.split(' ');
             tokens.forEach(token => {
-                console.log(token);
                 if(!Number.isNaN(+token)) {
-                    console.log("this is a number");
+
+                    // if +token > 2**4 - 1 throw an error
+                    
+                    byteCode.push(+token);
                     return;
                 }
+                byteCode.push(OP_CODES[token])
+            });
 
-                console.log("token: ", token, " will be assembled to byteCode: ", OP_CODES[token]);
+        });
 
-            })
-
-        })
+        return byteCode;
     }
 
 }
@@ -197,7 +197,7 @@ class Assemble {
 
     static init(pathName) {
         this.readContent(pathName);
-        this.assemble();
+        this.assemble(pathName);
     }
 
     static readContent(pathName)  {
@@ -205,32 +205,23 @@ class Assemble {
          this._source = fileContent;
     }
 
-    static assemble() {
-        // here we should get all tokens
-        // example add ax 10 ==> ["add", "ax", "10"]
+    static assemble(pathName) {
+        let outputFileName = pathName.split('/')[pathName.split('/').length - 1];
+        outputFileName = outputFileName.replace('asm', 'bin');
         const lexer = new Lexer(this);
-        const tokens = lexer.parse();
-        
+        const lines = lexer.parse();
+        // const mockedLines = ['LDA 20', 'OUT'];
+        console.log("lines: ", lines);
+        const parser = new Parser(lines);
+        const byteCode = parser.parse();
+        console.log("byteCode: ", byteCode);
+        const buffer = Buffer.from(byteCode);
 
-        const mockedLines = ['LDA 20', 'OUT'];
-        const parser = new Parser(mockedLines);
-        const binaryCode = parser.parse(); // we will produce directly byteCode
+        fs.writeFile(outputFileName, buffer,  "binary", function(err) { 
+            console.log(err);       
+        });
 
     }
 }
 
 Assemble.run();
-
-
-// TODO:
-// those are opCodes and the list should be returned by the assembler;
-/**
- * generate machine code
- */
-// var bytes = [0x00, 0xaa, 0xff];
-
-// var bu = Buffer.from(bytes);
-
-// fs.writeFile("add.bin", bu,  "binary", function(err) { 
-//     console.log(err);
-// });
