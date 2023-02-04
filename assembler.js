@@ -4,8 +4,6 @@ const os = require('os');
 
 const isWin32 = os.platform() === 'win32';
 
-// TODO: get flags ==> accept --debug ( to log more info while assembling )
-
 // ben eater computer instruction set
 const OP_CODES =  {
     NOP: 0b0000,
@@ -20,6 +18,7 @@ const OP_CODES =  {
     HLT: 0b1111
 };
 
+// maybe I should delete this for know ( i handle in a really bad way different pathTypes )
 const RT = 112;
 const NL = 10;
 
@@ -39,6 +38,21 @@ class Utility {
         const type = stuff[stuff.length - 1];
 
         return type === 'asm';
+    }
+
+    static isDebugMode() {
+        return typeof v8debug === 'object' 
+        || /--debug|--inspect/.test(process.execArgv.join(' '))
+    }
+
+    /**
+     * 
+     * @param { string } pattern 
+     * @returns { boolean } 
+     */
+    static isFlag(pattern) {
+        const regex = /^--\w+$/;
+        return regex.test(pattern);
     }
 }
 
@@ -171,8 +185,38 @@ class Parser {
 class Assemble {
     _line = 0;
     _source = "";
+    _isDebugMode = null; // --debug
+    _isProfileMode = null; // --profile
+
+    _flags = {
+        debug: '--debug',
+        profile: '--profile',
+        help: '--help',
+        version: '--version'
+    };
 
     static run() {
+        const isDebugging = Utility.isDebugMode();
+
+        
+        // gather all flags
+        const flags = process.argv.slice(2).filter(arg => {
+            return Utility.isFlag(arg);
+        });
+
+        flags.forEach(flag => {
+            switch(flag.trim()) {
+                case this._flags.debug:
+                        console.log("---- we are in debugging mode ----");
+                        break;
+                case this._flags.profile:
+                        console.log("---- we are in profiling mode  ----");
+                        break;
+                default:
+                        console.log(flag + " was not expected a flags hence will be ignored...");
+            }
+        })
+
         const name = Utility.getProgramName();
 
         if(process.argv.length < 3) {
@@ -180,14 +224,11 @@ class Assemble {
             return;
         }
 
-
-
-
         const filesToAssemble = process.argv.slice(2);
             
         filesToAssemble.forEach(f => {
             if(!Utility.isAsmFile(f)) {
-                console.log("Ignoring ", f, "since it s not a asm file");
+                console.log("Ignoring ", f, "since it's not a asm file");
                 return;
             }
 
