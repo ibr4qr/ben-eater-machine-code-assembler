@@ -3,7 +3,7 @@ Simple Ben Eater Assemblee to machine code
 
 Assemble to machineCode assembler of the Bean-eater 8 bit Computer.
 
-This Project will be coupled with the Bean Eater Virtual Machine.
+This Project will be coupled with the Bean Eater Virtual Machine ( https://github.com/ibr4qr/ben-eater-VM ).
 
 Should be good any language since we don't need any low level control.
 
@@ -17,7 +17,7 @@ How does it work?
 Registers available A, B
 
 
-b.asm
+b.bs
 
 ```
 LDA 10
@@ -28,10 +28,20 @@ OUT
 ```
 
 
+```
+  node assembler --usage
+```
+
+```
+  node assembler <filePath> | <folder> | <Array<filePath>>
+```
+
+
+
 Example.
 
 ```
- node essambler main.asm
+ node essambler main.bs
 ```
 
 
@@ -41,4 +51,9 @@ Example.
 
 
 output should be byteCode then evaluated by the VM.
+
+
+// CHALLENGE:
+
+- where to store calls body
 
