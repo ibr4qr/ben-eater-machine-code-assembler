@@ -58,4 +58,43 @@ output should be byteCode then evaluated by the VM.
 **** when defining <:identifier> the body of this func should be stored somewhere that is not the body of the bytecode
 
 - I consider storing it in VM Main Memory ( I suppose will be the same for other conditional block of code ) 
+- Consider having a little space for routine calls
+
+***Example
+```
+ LDA 10
+ ADD 30
+ 
+ OUT
+ 
+ ## 
+ CALL printing
+ 
+ 
+ 
+ ## here we calculate the addressNumber the body routine will be stored
+ ## Let's suppose :printing will have address 0b0000
+ ## The body of the routine is 12 bytes long ( excluded the RET instruction ) ( should we consider it ?? ) 
+
+ 
+ :printing 
+ LDA 10
+ OUT
+ 
+ 
+ RET
+ 
+```
+
+***Return
+
+
+```
+## this should execute the first lines of code and then jump to the routine call.
+const byteCode = [0b0001, 0b1010, 0b1110, 0b0110, 0b0000];
+
+
+const mainMemory = [0b0001, 0b1010, 0b1110, RETURN byteCode];
+```
+
 
